@@ -1,0 +1,34 @@
+# 日志
+# - enableInfoLog 是否开启info日志显示 默认true
+# - enableWarnLog 是否开启error日志显示 默认true
+# - enableConsoleLog 是否开启控制台日志显示 默认false
+# - level日志等级 [debug info warn error dpanic panic fatal]
+# - path 日志保存路径
+# - maxsize 单个日志文件最大值 [单位mb]
+# - max_age 存储天数
+log:
+  enableInfoLog: true
+  enableWarnLog: true
+  enableConsoleLog: true
+  level: debug
+  path: "./runtime"
+  infoPath: "/info/info.log"
+  errorPath: "/error/error.log"
+  maxsize: 10
+  max_age: 365
+
+# 自动收取
+# - enable 是否开启
+# - token 用户鉴权token 格式为 Bearer eyJ0eXAiOiJKV1Q......
+# - collectTime 自动收集时间 单位分钟
+# - incubatorId1 龙蛋
+# - incubatorId2 龙魂
+# - incubatorId3 龙精
+dragonAuto:
+  enable: true
+  token: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9........
+  collectTime: 120
+  incubatorId1: 447411111111111111
+  incubatorId2: 447411111111111112
+  incubatorId3: 447411111111111113
+
