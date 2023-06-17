@@ -8,4 +8,4 @@
 ## 注意token是重要数据,请勿随意给予他人
 
 ![img](./docs/img1.png)
-![img](./docs/img0.png)
+![img](./docs/img0.jpg)
