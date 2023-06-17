@@ -13,15 +13,26 @@ type ResultDragonAutoCollect struct {
 	Data    int    `json:"data"`
 }
 
-func DragonAutoCollect() {
-	sendRequest(config.Instance.DragonAuto.IncubatorId1, "龙蛋")
-	time.Sleep(time.Second * 5)
-	sendRequest(config.Instance.DragonAuto.IncubatorId2, "龙魂")
-	time.Sleep(time.Second * 5)
-	sendRequest(config.Instance.DragonAuto.IncubatorId3, "龙精")
+type ResultDragonList struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
-func sendRequest(id, name string) {
+func DragonAutoCollect() {
+	sendRequestDragonList(config.Instance.DragonAuto.IncubatorId1)
+	time.Sleep(time.Second * 5)
+	sendRequestDragonCollect(config.Instance.DragonAuto.IncubatorId1, "龙蛋")
+	time.Sleep(time.Second * 5)
+	sendRequestDragonList(config.Instance.DragonAuto.IncubatorId2)
+	time.Sleep(time.Second * 5)
+	sendRequestDragonCollect(config.Instance.DragonAuto.IncubatorId2, "龙魂")
+	time.Sleep(time.Second * 5)
+	sendRequestDragonList(config.Instance.DragonAuto.IncubatorId3)
+	time.Sleep(time.Second * 5)
+	sendRequestDragonCollect(config.Instance.DragonAuto.IncubatorId3, "龙精")
+}
+
+func sendRequestDragonCollect(id, name string) {
 	res, err := NewAppCommon().RequestDragonCollect(id)
 	if err != nil {
 		zap.L().Sugar().Errorf("发送收集请求失败 err :%v", err)
@@ -30,7 +41,7 @@ func sendRequest(id, name string) {
 	result := ResultDragonAutoCollect{}
 	err = json.Unmarshal(res, &result)
 	if err != nil {
-		zap.L().Sugar().Errorf("返回解析失败 err :%v", err)
+		zap.L().Sugar().Errorf("返回解析失败 data:%v err :%v", string(res), err)
 		return
 	}
 	if result.Code != 0 {
@@ -42,4 +53,22 @@ func sendRequest(id, name string) {
 		return
 	}
 	zap.L().Sugar().Infof("收集成功 本次收集%v个%v", result.Data, name)
+}
+
+func sendRequestDragonList(id string) {
+	res, err := NewAppCommon().RequestDragonList(id)
+	if err != nil {
+		zap.L().Sugar().Errorf("发送收集请求失败 err :%v", err)
+		return
+	}
+	result := ResultDragonList{}
+	err = json.Unmarshal(res, &result)
+	if err != nil {
+		zap.L().Sugar().Errorf("返回解析失败 data:%v err :%v", string(res), err)
+		return
+	}
+	if result.Code != 0 {
+		zap.L().Sugar().Errorf("获取列表失败 :%+v", result)
+		return
+	}
 }
