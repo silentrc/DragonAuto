@@ -8,9 +8,9 @@ import (
 )
 
 type ResultDragonAutoCollect struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Data    int    `json:"data"`
+	Code    int     `json:"code"`
+	Message string  `json:"message"`
+	Data    float64 `json:"data"`
 }
 
 type ResultDragonList struct {
@@ -45,8 +45,8 @@ func sendRequestDragonCollect(id, name string) {
 		return
 	}
 	if result.Code != 0 {
-		if result.Message == "暂无龙蛋可收取" {
-			zap.L().Sugar().Infof("收集失败，暂无龙蛋可收取%v", result)
+		if result.Message == "暂无龙蛋可收取" || result.Message == "暂无资源可收取" {
+			zap.L().Sugar().Infof("收集失败，暂无资源可收取 result:%+v", result)
 			return
 		}
 		zap.L().Sugar().Errorf("收集失败 err :%+v", result)

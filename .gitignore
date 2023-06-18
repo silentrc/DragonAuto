@@ -2,7 +2,9 @@
 /conf/config.yaml
 /runtime/
 build.sh
+releases.sh
 restart.sh
 mac-applesilicon-dragonAuto
 linux-dragonAuto
 win-dragonAuto.exe
+/build
