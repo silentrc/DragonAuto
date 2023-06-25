@@ -10,7 +10,7 @@ import (
 type httpUtils struct {
 }
 
-func (u *utils) NewHttpUtils() *httpUtils {
+func NewHttpUtils() *httpUtils {
 	return &httpUtils{}
 }
 

@@ -3,8 +3,6 @@ package app
 import (
 	"dragonAuto/config"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"go.uber.org/zap"
 	"time"
 )
@@ -85,6 +83,7 @@ type DragonListResult struct {
 }
 
 func sendRequestDragonList(id, name string) (result ResultDragonList, err error) {
+	zap.L().Sugar().Infof("sendRequestDragonList %v", name)
 	res, err := NewAppCommon().RequestDragonList(id)
 	if err != nil {
 		zap.L().Sugar().Errorf("发送收集%v请求失败 err :%v", name, err)
@@ -95,8 +94,13 @@ func sendRequestDragonList(id, name string) (result ResultDragonList, err error)
 		zap.L().Sugar().Errorf("返回解析失败%v, data:%v err :%v", name, string(res), err)
 		return
 	}
+	if result.Code == 10400 && result.Message == "登录已过期请重新登录" {
+		zap.L().Sugar().Errorf("返回解析失败%v, data:%v err :%v", name, string(res), err)
+		return
+	}
+
 	if result.Code != 0 {
-		err = errors.New(fmt.Sprintf("获取%v列表失败 :%+v", name, result))
+		zap.L().Sugar().Errorf("获取%v列表失败 :%+v", name, result)
 		return
 	}
 	return

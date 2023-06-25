@@ -16,7 +16,7 @@ func NewAppCommon() *appRequest {
 }
 
 func (a *appRequest) RequestDragonCollect(id string) (result []byte, err error) {
-	resp, err := utils.NewUtils().NewHttpUtils().Client().
+	resp, err := utils.NewHttpUtils().Client().
 		SetHeader("Connection", "keep-alive").
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6").
@@ -45,7 +45,7 @@ func (a *appRequest) RequestDragonCollect(id string) (result []byte, err error) 
 }
 
 func (a *appRequest) RequestDragonList(id string) (result []byte, err error) {
-	resp, err := utils.NewUtils().NewHttpUtils().Client().
+	resp, err := utils.NewHttpUtils().Client().
 		SetHeader("Connection", "keep-alive").
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6").
