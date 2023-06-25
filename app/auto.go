@@ -23,11 +23,14 @@ const (
 
 func DragonAutoCollect() {
 	//检测token
-	ok := checkToken()
-	if !ok {
-		zap.L().Sugar().Errorf("token 验证失败,请检查")
-		return
+	if config.Instance.DragonAuto.Token == "" {
+		ok := checkToken()
+		if !ok {
+			zap.L().Sugar().Errorf("token 验证失败,请检查")
+			return
+		}
 	}
+
 	res, err := sendRequestDragonList(config.Instance.DragonAuto.IncubatorId1, DragonEgg)
 	if err == nil {
 		time.Sleep(time.Second * 5)
@@ -91,7 +94,9 @@ type DragonListResult struct {
 }
 
 func sendRequestDragonList(id, name string) (result ResultDragonList, err error) {
+	restartNum := 0
 	zap.L().Sugar().Infof("sendRequestDragonList %v", name)
+Restart:
 	res, err := NewAppCommon().RequestDragonList(id)
 	if err != nil {
 		zap.L().Sugar().Errorf("发送收集%v请求失败 err :%v", name, err)
@@ -102,7 +107,21 @@ func sendRequestDragonList(id, name string) (result ResultDragonList, err error)
 		zap.L().Sugar().Errorf("返回解析失败%v, data:%v err :%v", name, string(res), err)
 		return
 	}
-	if result.Code == 10400 && result.Message == "登录已过期请重新登录" {
+
+	if result.Code == 10040 && result.Message == "登录已过期请重新登录" {
+		if config.Instance.DragonAuto.Mode == 2 {
+			config.Instance.DragonAuto.Token = ""
+			if restartNum > 3 {
+				zap.L().Sugar().Errorf("重新登录三次失败停止本次采集,name%v, data:%v err :%v", name, string(res), err)
+				err = errors.New(fmt.Sprintf("重新登录三次失败停止本次采集,name%v, data:%v err :%v", name, string(res), err))
+				return
+			}
+			time.Sleep(time.Second * 5)
+			checkToken()
+			restartNum++
+			zap.L().Sugar().Errorf("登录已过期,开始重新登录%v, data:%v err :%v", name, string(res), err)
+			goto Restart
+		}
 		zap.L().Sugar().Errorf("返回解析失败%v, data:%v err :%v", name, string(res), err)
 		return
 	}
