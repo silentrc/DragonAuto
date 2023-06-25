@@ -3,6 +3,8 @@ package app
 import (
 	"dragonAuto/config"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"time"
 )
@@ -20,6 +22,12 @@ const (
 )
 
 func DragonAutoCollect() {
+	//检测token
+	ok := checkToken()
+	if !ok {
+		zap.L().Sugar().Errorf("token 验证失败,请检查")
+		return
+	}
 	res, err := sendRequestDragonList(config.Instance.DragonAuto.IncubatorId1, DragonEgg)
 	if err == nil {
 		time.Sleep(time.Second * 5)
@@ -101,6 +109,7 @@ func sendRequestDragonList(id, name string) (result ResultDragonList, err error)
 
 	if result.Code != 0 {
 		zap.L().Sugar().Errorf("获取%v列表失败 :%+v", name, result)
+		err = errors.New(fmt.Sprintf("获取%v列表失败 :%+v", name, result))
 		return
 	}
 	return
@@ -170,3 +179,58 @@ func sendRequestDragonAddEssence() {
 //获取龙属性信息 https://ld.douxiangapp.com/ld/api/v1/dragon/dragonCardSlot/getOneById?id=1665818363241279489
 //memberNftId : "1668932059820904449" = sysMemberNftId
 //propMemberNftIds : ["1670756768378966018"]
+
+// 检测token
+func checkToken() bool {
+	if config.Instance.DragonAuto.Mode == 1 {
+		if config.Instance.DragonAuto.ReqToken == "" {
+			zap.L().Sugar().Errorf("token为空，如需使用账号密码模式，请把mode改为1")
+		} else {
+			config.Instance.DragonAuto.Token = config.Instance.DragonAuto.ReqToken
+		}
+		return false
+	}
+	if config.Instance.DragonAuto.Mode == 2 {
+		if config.Instance.DragonAuto.Account == "" || config.Instance.DragonAuto.Pwd == "" {
+			zap.L().Sugar().Errorf("账号或密码为空，如需使用token模式，请把mode改为2")
+			return false
+		}
+		sendRequestDragonLogin()
+	}
+	if config.Instance.DragonAuto.Token != "" {
+		return true
+	}
+	return false
+}
+
+type ResultDragonLogin struct {
+	Code int `json:"code"`
+	Data struct {
+		AccessToken string `json:"access_token"`
+	} `json:"data"`
+	Message string `json:"message"`
+}
+
+// 用户登陆
+func sendRequestDragonLogin() (result ResultDragonLogin, err error) {
+	res, err := NewAppCommon().RequestPasswordLogin()
+	if err != nil {
+		zap.L().Sugar().Errorf("用户登陆失败 err :%v", err)
+		return
+	}
+	err = json.Unmarshal(res, &result)
+	if err != nil {
+		zap.L().Sugar().Errorf("返回解析失败, data:%v err :%v", string(res), err)
+		return
+	}
+	if result.Code != 0 {
+		zap.L().Sugar().Errorf("用户登陆失败 :%+v", result)
+		return
+	}
+	if result.Data.AccessToken == "" {
+		zap.L().Sugar().Errorf("用户登陆失败 :%+v", result)
+		return
+	}
+	config.Instance.DragonAuto.Token = "Bearer " + result.Data.AccessToken
+	return
+}

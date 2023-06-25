@@ -52,7 +52,13 @@ func init() {
 	}
 
 	Instance.DragonAuto.Enable = viper.GetBool("dragonAuto.enable")
-	Instance.DragonAuto.Token = viper.GetString("dragonAuto.token")
+	Instance.DragonAuto.Mode = viper.GetInt("dragonAuto.mode")
+	if Instance.DragonAuto.Mode == 0 {
+		Instance.DragonAuto.Mode = 1
+	}
+	Instance.DragonAuto.Account = viper.GetString("dragonAuto.account")
+	Instance.DragonAuto.Pwd = viper.GetString("dragonAuto.pwd")
+	Instance.DragonAuto.ReqToken = viper.GetString("dragonAuto.token")
 	Instance.DragonAuto.CollectTime = viper.GetInt("dragonAuto.collectTime")
 	Instance.DragonAuto.IncubatorId1 = viper.GetString("dragonAuto.incubatorId1")
 	Instance.DragonAuto.IncubatorId2 = viper.GetString("dragonAuto.incubatorId2")
@@ -68,7 +74,11 @@ type ConfigValue struct {
 
 type dragonAuto struct {
 	Enable       bool
+	Mode         int
+	ReqToken     string
 	Token        string
+	Account      string
+	Pwd          string
 	CollectTime  int
 	IncubatorId1 string
 	IncubatorId2 string

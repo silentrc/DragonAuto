@@ -19,15 +19,19 @@ log:
 
 # 自动收取
 # - enable 是否开启
-# - token 用户鉴权token 格式为 Bearer eyJ0eXAiOiJKV1Q......
-# - collectTime 自动收集时间 单位分钟
+# - mode 模式 1 token模式，2 账号密码模式  默认1
+# - token 用户鉴权token
+# - collectTime 自动收集时间/分钟
 # - incubatorId1 龙蛋
 # - incubatorId2 龙魂
 # - incubatorId3 龙精
 dragonAuto:
   enable: true
+  mode: 1
+  account: 13312345678
+  pwd: abc123
   token: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9........
-  collectTime: 120
+  collectTime: 30
   incubatorId1: 447411111111111111
   incubatorId2: 447411111111111112
   incubatorId3: 447411111111111113
