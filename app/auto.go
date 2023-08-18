@@ -15,11 +15,12 @@ type ResultDragonAutoCollect struct {
 	Data    float64 `json:"data"`
 }
 
-const (
-	DragonEgg     = "龙蛋"
-	DragonSoul    = "龙魂"
-	DragonEssence = "龙精"
-)
+var Incubators = []IncubatorInfo{}
+
+type IncubatorInfo struct {
+	IncubatorId string `json:"id"`
+	Name        string `json:"name"`
+}
 
 func DragonAutoCollect() {
 	//检测token
@@ -31,27 +32,80 @@ func DragonAutoCollect() {
 		}
 	}
 
-	res, err := sendRequestDragonList(config.Instance.DragonAuto.IncubatorId1, DragonEgg)
-	if err == nil {
-		time.Sleep(time.Second * 5)
-		sendRequestDragonCollect(config.Instance.DragonAuto.IncubatorId1, DragonEgg, res.Data.List[0].DragonEgg, res.Data.List[0].DragonGold)
+	var resultIncubator ResultDragonAutoIncubatorId
+	var err error
+	if len(Incubators) <= 0 {
+		for {
+			//获取孵化器ID
+			resultIncubator, err = sendRequestDragonGetIncubatorId()
+			if err != nil {
+				//获取孵化器ID失败
+				zap.L().Sugar().Errorf("获取孵化器ID失败，睡眠10s后重新获取 err :%v", err)
+				time.Sleep(10 * time.Second)
+			}
+			break
+		}
+		if config.Instance.DragonAuto.Stars {
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.EggIncubator,
+				Name:        "龙蛋/金蛋",
+			})
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.SoulIncubator,
+				Name:        "龙魂",
+			})
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.EssenceIncubator,
+				Name:        "龙精",
+			})
+		}
+		if config.Instance.DragonAuto.Chaos {
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.BallIncubator,
+				Name:        "白龙",
+			})
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.CoreIncubator,
+				Name:        "黑龙",
+			})
+		}
+		if config.Instance.DragonAuto.Saint {
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.ScaleIncubator,
+				Name:        "龙鳞",
+			})
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.BloodIncubator,
+				Name:        "龙血",
+			})
+			Incubators = append(Incubators, IncubatorInfo{
+				IncubatorId: resultIncubator.Data.GlassIncubator,
+				Name:        "龙晶",
+			})
+		}
 	}
-	time.Sleep(time.Second * 5)
-	res, err = sendRequestDragonList(config.Instance.DragonAuto.IncubatorId2, DragonSoul)
-	if err == nil {
-		time.Sleep(time.Second * 5)
-		sendRequestDragonCollect(config.Instance.DragonAuto.IncubatorId2, DragonSoul, res.Data.List[0].DragonSoul, 0)
+
+	for _, v := range Incubators {
+		res, err := sendRequestDragonList(v.IncubatorId, v.Name)
+		if err == nil {
+			time.Sleep(time.Second * 5)
+			sendRequestDragonCollect(v.IncubatorId, v.Name, res.Data.List[0].DragonEgg, res.Data.List[0].DragonGold)
+		}
+
 	}
-	time.Sleep(time.Second * 5)
-	res, err = sendRequestDragonList(config.Instance.DragonAuto.IncubatorId3, DragonEssence)
-	if err == nil {
-		time.Sleep(time.Second * 5)
-		sendRequestDragonCollect(config.Instance.DragonAuto.IncubatorId3, DragonEssence, res.Data.List[0].DragonEssence, 0)
-	}
+
 }
 
 func sendRequestDragonCollect(id, name string, num float64, goldNum float64) {
-	res, err := NewAppCommon().RequestDragonCollect(id)
+	isSelect := false
+	var option string
+Select:
+	if isSelect {
+		option = "collect"
+	} else {
+		option = "startIncubation"
+	}
+	res, err := NewAppCommon().RequestDragonCollectOrStart(id, option)
 	if err != nil {
 		zap.L().Sugar().Errorf("发送收集请求失败 err :%v", err)
 		return
@@ -63,6 +117,10 @@ func sendRequestDragonCollect(id, name string, num float64, goldNum float64) {
 		return
 	}
 	if result.Code != 0 {
+		if result.Message == "此孵化园已处于孵化中" {
+			isSelect = true
+			goto Select
+		}
 		if result.Message == "暂无龙蛋可收取" || result.Message == "暂无资源可收取" {
 			zap.L().Sugar().Infof("收集失败，暂无资源可收取 result:%+v", string(res))
 			return
@@ -74,6 +132,11 @@ func sendRequestDragonCollect(id, name string, num float64, goldNum float64) {
 	if goldNum != 0 {
 		zap.L().Sugar().Infof("收集成功 本次收集%v个金蛋,result:%+v", num, string(res))
 	}
+	if isSelect {
+		return
+	}
+	isSelect = true
+	goto Select
 }
 
 type ResultDragonList struct {
@@ -149,8 +212,8 @@ Restart:
 //
 // 开启孵化
 // https://ld.douxiangapp.com/ld/api/v1/dragon/dragonIncubator/startIncubation post {id: "447496257439551488"}
-func sendRequestDragonStartIncubation() {
-
+func sendRequestDragonStartIncubation(id, name string) (result ResultDragonList, err error) {
+	return
 }
 
 // 关闭孵化
@@ -251,5 +314,38 @@ func sendRequestDragonLogin() (result ResultDragonLogin, err error) {
 		return
 	}
 	config.Instance.DragonAuto.Token = "Bearer " + result.Data.AccessToken
+	return
+}
+
+type ResultDragonAutoIncubatorId struct {
+	Code int `json:"code"`
+	Data struct {
+		EggIncubator     string `json:"incubatorId1"`
+		SoulIncubator    string `json:"incubatorId2"`
+		EssenceIncubator string `json:"incubatorId3"`
+		BallIncubator    string `json:"incubatorId5"`
+		CoreIncubator    string `json:"incubatorId6"`
+		ScaleIncubator   string `json:"incubatorId7"`
+		BloodIncubator   string `json:"incubatorId8"`
+		GlassIncubator   string `json:"incubatorId9"`
+	} `json:"data"`
+	Message string `json:"message"`
+}
+
+func sendRequestDragonGetIncubatorId() (result ResultDragonAutoIncubatorId, err error) {
+	res, err := NewAppCommon().RequestDragonGetIncubatorId()
+	if err != nil {
+		zap.L().Sugar().Errorf("发送孵化器请求失败 err :%v", err)
+		return
+	}
+	err = json.Unmarshal(res, &result)
+	if err != nil {
+		zap.L().Sugar().Errorf("返回解析失败 data:%v err :%v", string(res), err)
+		return
+	}
+	if result.Code != 0 {
+		zap.L().Sugar().Errorf("获取孵化器ID失败 err:%v, res:%+v", err, result)
+		return
+	}
 	return
 }

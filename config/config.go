@@ -60,9 +60,13 @@ func init() {
 	Instance.DragonAuto.Pwd = viper.GetString("dragonAuto.pwd")
 	Instance.DragonAuto.ReqToken = viper.GetString("dragonAuto.token")
 	Instance.DragonAuto.CollectTime = viper.GetInt("dragonAuto.collectTime")
-	Instance.DragonAuto.IncubatorId1 = viper.GetString("dragonAuto.incubatorId1")
-	Instance.DragonAuto.IncubatorId2 = viper.GetString("dragonAuto.incubatorId2")
-	Instance.DragonAuto.IncubatorId3 = viper.GetString("dragonAuto.incubatorId3")
+	Instance.DragonAuto.Platform = viper.GetString("dragonAuto.platform")
+	if Instance.DragonAuto.Platform == "" {
+		Instance.DragonAuto.Platform = "ios"
+	}
+	Instance.DragonAuto.Stars = viper.GetBool("dragonAuto.stars")
+	Instance.DragonAuto.Chaos = viper.GetBool("dragonAuto.chaos")
+	Instance.DragonAuto.Saint = viper.GetBool("dragonAuto.saint")
 
 }
 
@@ -73,16 +77,17 @@ type ConfigValue struct {
 }
 
 type dragonAuto struct {
-	Enable       bool
-	Mode         int
-	ReqToken     string
-	Token        string
-	Account      string
-	Pwd          string
-	CollectTime  int
-	IncubatorId1 string
-	IncubatorId2 string
-	IncubatorId3 string
+	Enable      bool
+	Mode        int
+	ReqToken    string
+	Token       string
+	Account     string
+	Pwd         string
+	CollectTime int
+	Platform    string
+	Stars       bool
+	Chaos       bool
+	Saint       bool
 }
 
 type logConfig struct {
