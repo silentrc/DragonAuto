@@ -172,21 +172,17 @@ Restart:
 	}
 
 	if result.Code == 10040 && result.Message == "登录已过期请重新登录" {
-		if config.Instance.DragonAuto.Mode == 2 {
-			config.Instance.DragonAuto.Token = ""
-			if restartNum > 3 {
-				zap.L().Sugar().Errorf("重新登录三次失败停止本次采集,name%v, data:%v err :%v", name, string(res), err)
-				err = errors.New(fmt.Sprintf("重新登录三次失败停止本次采集,name%v, data:%v err :%v", name, string(res), err))
-				return
-			}
-			time.Sleep(time.Second * 5)
-			checkToken()
-			restartNum++
-			zap.L().Sugar().Errorf("登录已过期,开始重新登录%v, data:%v err :%v", name, string(res), err)
-			goto Restart
+		config.Instance.DragonAuto.Token = ""
+		if restartNum > 3 {
+			zap.L().Sugar().Errorf("重新登录三次失败停止本次采集,name%v, data:%v err :%v", name, string(res), err)
+			err = errors.New(fmt.Sprintf("重新登录三次失败停止本次采集,name%v, data:%v err :%v", name, string(res), err))
+			return
 		}
-		zap.L().Sugar().Errorf("返回解析失败%v, data:%v err :%v", name, string(res), err)
-		return
+		time.Sleep(time.Second * 5)
+		checkToken()
+		restartNum++
+		zap.L().Sugar().Errorf("登录已过期,开始重新登录%v, data:%v err :%v", name, string(res), err)
+		goto Restart
 	}
 
 	if result.Code != 0 {
@@ -264,21 +260,11 @@ func sendRequestDragonAddEssence() {
 
 // 检测token
 func checkToken() bool {
-	if config.Instance.DragonAuto.Mode == 1 {
-		if config.Instance.DragonAuto.ReqToken == "" {
-			zap.L().Sugar().Errorf("token为空，如需使用账号密码模式，请把mode改为1")
-		} else {
-			config.Instance.DragonAuto.Token = config.Instance.DragonAuto.ReqToken
-		}
+	if config.Instance.DragonAuto.Account == "" || config.Instance.DragonAuto.Pwd == "" {
+		zap.L().Sugar().Errorf("账号或密码为空，如需使用token模式，请把mode改为2")
 		return false
 	}
-	if config.Instance.DragonAuto.Mode == 2 {
-		if config.Instance.DragonAuto.Account == "" || config.Instance.DragonAuto.Pwd == "" {
-			zap.L().Sugar().Errorf("账号或密码为空，如需使用token模式，请把mode改为2")
-			return false
-		}
-		sendRequestDragonLogin()
-	}
+	sendRequestDragonLogin()
 	if config.Instance.DragonAuto.Token != "" {
 		return true
 	}

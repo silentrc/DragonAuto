@@ -52,10 +52,6 @@ func init() {
 	}
 
 	Instance.DragonAuto.Enable = viper.GetBool("dragonAuto.enable")
-	Instance.DragonAuto.Mode = viper.GetInt("dragonAuto.mode")
-	if Instance.DragonAuto.Mode == 0 {
-		Instance.DragonAuto.Mode = 1
-	}
 	Instance.DragonAuto.Account = viper.GetString("dragonAuto.account")
 	Instance.DragonAuto.Pwd = viper.GetString("dragonAuto.pwd")
 	Instance.DragonAuto.ReqToken = viper.GetString("dragonAuto.token")

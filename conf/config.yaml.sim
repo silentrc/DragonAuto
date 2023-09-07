@@ -20,8 +20,8 @@ log:
 
 # 自动收取
 # - enable 是否开启
-# - mode 模式 1 token模式，2 账号密码模式  默认1
-# - token 用户鉴权token
+# - account 账号
+# - pwd 密码
 # - collectTime 自动收集时间/分钟
 # - platform 登录模式 h5/ios/android 比如手机用app登录,自动收取用h5,两边互不影响, 一个android一个ios不行,app登录会互相挤掉
 # - stars: true/false 是否开启星域自动收取 龙蛋/龙魂/龙精/金蛋
@@ -29,13 +29,12 @@ log:
 # - saint: true/false 是否开启圣域自动收取 龙鳞/龙血/龙晶
 dragonAuto:
   enable: true
-  mode: 1
   account: 13312345678
   pwd: abc123
+  platform: h5
   token: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9........
   collectTime: 30
-  platform: h5
-  stars: true
+  stars: false
   chaos: true
   saint: true
 
